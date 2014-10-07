@@ -18,8 +18,8 @@ RUN echo [supervisord] | tee -a /etc/supervisor/supervisord.conf ; echo nodaemon
 
 # nimbus (thrift drpc drpc.invocations)
 EXPOSE 6627 3772 3773
-# supervisor (slot1 slot2 slot3 slot4 logviewer)
-EXPOSE 6700 6701 6702 6703 8000
+# supervisor (slot logviewer)
+EXPOSE 6700 8000
 # ui
 EXPOSE 8080
 

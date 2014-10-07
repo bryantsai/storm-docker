@@ -22,9 +22,6 @@ supervisor:
     - "8000"
   expose:
     - "6700"
-    - "6701"
-    - "6702"
-    - "6703"
   links:
     - nimbus:nimbus
     - zookeeper:zk
