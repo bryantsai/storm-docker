@@ -1,0 +1,144 @@
+zookeeper1:
+  build: zookeeper
+  command: 1 5
+  ports:
+    - "2181:2181"
+    - "2888:2888"
+    - "3888:3888"
+  hostname: zookeeper1
+  environment:
+    DOCKER_HOST:
+zookeeper2:
+  build: zookeeper
+  command: 2 5
+  ports:
+    - "2182:2181"
+    - "2889:2889"
+    - "3889:3889"
+  hostname: zookeeper2
+  environment:
+    DOCKER_HOST:
+zookeeper3:
+  build: zookeeper
+  command: 3 5
+  ports:
+    - "2183:2181"
+    - "2890:2890"
+    - "3890:3890"
+  hostname: zookeeper3
+  environment:
+    DOCKER_HOST:
+zookeeper4:
+  build: zookeeper
+  command: 4 5
+  ports:
+    - "2184:2181"
+    - "2891:2891"
+    - "3891:3891"
+  hostname: zookeeper4
+  environment:
+    DOCKER_HOST:
+zookeeper5:
+  build: zookeeper
+  command: 5 5
+  ports:
+    - "2185:2181"
+    - "2892:2892"
+    - "3892:3892"
+  hostname: zookeeper5
+  environment:
+    DOCKER_HOST:
+nimbus:
+  build: storm
+  command: nimbus drpc
+  ports:
+    - "46627:6627"
+  expose:
+    - "3772"
+    - "3773"
+  links:
+    - zookeeper1:zk1
+    - zookeeper2:zk2
+    - zookeeper3:zk3
+    - zookeeper4:zk4
+    - zookeeper5:zk5
+  hostname: nimbus
+  environment:
+    ZK_INSTANCES: 5
+supervisor:
+  build: storm
+  command: supervisor logviewer
+  ports:
+    - "8000"
+  expose:
+    - "6700"
+  links:
+    - nimbus:nimbus
+    - zookeeper1:zk1
+    - zookeeper2:zk2
+    - zookeeper3:zk3
+    - zookeeper4:zk4
+    - zookeeper5:zk5
+  hostname: supervisor
+  environment:
+    ZK_INSTANCES: 5
+ui:
+  build: storm
+  command: ui
+  ports:
+    - "48080:8080"
+  links:
+    - nimbus:nimbus
+    - zookeeper1:zk1
+    - zookeeper2:zk2
+    - zookeeper3:zk3
+    - zookeeper4:zk4
+    - zookeeper5:zk5
+  hostname: ui
+  environment:
+    ZK_INSTANCES: 5
+cli:
+  build: storm
+  command: cli
+  links:
+    - nimbus:nimbus
+    - zookeeper1:zk1
+    - zookeeper2:zk2
+    - zookeeper3:zk3
+    - zookeeper4:zk4
+    - zookeeper5:zk5
+  hostname: cli
+  volumes:
+    - .:/code
+  working_dir: /code
+  environment:
+    ZK_INSTANCES: 5
+kafka:
+  build: kafka
+  expose:
+    - "9092"
+  hostname: kafka
+  links:
+    - zookeeper1:zk1
+    - zookeeper2:zk2
+    - zookeeper3:zk3
+    - zookeeper4:zk4
+    - zookeeper5:zk5
+  environment:
+    ZK_INSTANCES: 5
+kafkacli:
+  build: kafka
+  command: cli
+  links:
+    - zookeeper1:zk1
+    - zookeeper2:zk2
+    - zookeeper3:zk3
+    - zookeeper4:zk4
+    - zookeeper5:zk5
+    - kafka:kafka
+  hostname: kafkacli
+  volumes:
+    - .:/code
+  working_dir: /code
+  environment:
+    ZK_INSTANCES: 5

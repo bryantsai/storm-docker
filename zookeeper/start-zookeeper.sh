@@ -1,12 +1,14 @@
 #!/bin/bash
 
-id=$1
-if ! [ -z $id ] && [[ $id =~ ^[123]$ ]]
-then
+id=$(($1))
+cnt=$(($2))
+if [[ id -gt 0 ]] && [[ cnt -gt 0 ]] && [[ id -le cnt ]] && ! [ -z "$DOCKER_HOST" ]; then
   echo $id > /var/lib/zookeeper/myid
-  echo server.1=zookeeper1:2888:3888 | tee -a /etc/zookeeper/conf/zoo.cfg
-  echo server.2=zookeeper2:2888:3888 | tee -a /etc/zookeeper/conf/zoo.cfg
-  echo server.3=zookeeper3:2888:3888 | tee -a /etc/zookeeper/conf/zoo.cfg
+
+  host=`echo $DOCKER_HOST|awk -F '://' '{print $2}'|awk -F ':' '{print $1}'`
+  for i in `seq 1 $cnt`; do
+    echo server.$i=$host:$((2888 - 1 + $i)):$((3888 - 1 + $i)) | tee -a /etc/zookeeper/conf/zoo.cfg
+  done    
 fi
 
 echo [program:zookeerper] | tee -a /etc/supervisor/conf.d/zookeerper.conf

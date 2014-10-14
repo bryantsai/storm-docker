@@ -40,7 +40,7 @@ ui:
 cli:
   build: storm
   command: cli
-  links: 
+  links:
     - nimbus:nimbus
     - zookeeper:zk
   hostname: cli

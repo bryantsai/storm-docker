@@ -4,7 +4,7 @@ Storm clustering environment on Docker, ZooKeeper and Kafka included. The quicke
 
 This work is based on https://github.com/wurstmeister/storm-docker and https://github.com/wurstmeister/kafka-docker. Kudos to wurstmeister.
 
-**Note the Docker version used to was 1.2.0. Storm version used was 0.9.2.**
+**Note the Docker version used to was 1.2.0, Storm version used was 0.9.2, Kafka version used was 0.8.1.1 (SCALA 2.9.2), ZooKeeper version used was 3.4.5.**
 
 ## TL;DR
 
@@ -23,14 +23,16 @@ Creating stormdocker_kafka_1...
 $ fig ps
           Name                   Command          State                                  Ports
 ----------------------------------------------------------------------------------------------------------------------------
-stormdocker_zookeeper_1                           Up       3888/tcp, 2888/tcp, 2181/tcp
-stormdocker_nimbus_1       nimbus drpc            Up       8080/tcp, 3773/tcp, 3772/tcp, 6627/tcp, 8000/tcp, 6700/tcp
-stormdocker_ui_1           ui                     Up       48080->8080/tcp, 3773/tcp, 3772/tcp, 6627/tcp, 8000/tcp, 6700/tcp
-stormdocker_supervisor_1   supervisor logviewer   Up       8080/tcp, 3773/tcp, 3772/tcp, 6627/tcp, 49159->8000/tcp, 6700/tcp
-stormdocker_kafka_1                               Up       9092/tcp
+stormdocker_zookeeper_1                           Up      3888/tcp, 2888/tcp, 42181->2181/tcp
+stormdocker_nimbus_1       nimbus drpc            Up      8080/tcp, 3773/tcp, 3772/tcp, 46627->6627/tcp, 8000/tcp, 6700/tcp
+stormdocker_ui_1           ui                     Up      48080->8080/tcp, 3773/tcp, 3772/tcp, 6627/tcp, 8000/tcp, 6700/tcp
+stormdocker_supervisor_1   supervisor logviewer   Up      8080/tcp, 3773/tcp, 3772/tcp, 6627/tcp, 49158->8000/tcp, 6700/tcp
+stormdocker_kafka_1                               Up      9092/tcp
 ```
 
-This is a complete self-contained environment, only Storm UI port and Supervior logviewer port are exposed so that we can access them externally from browsers. Also, all of ZooKeeper, Storm, and Kafka processes are managed by "supervisord".
+This is a complete self-contained environment, with Storm UI port and Supervior logviewer port exposed so that we can access them externally from browsers. Also, ZooKeeper client port and Storm Nimbus Thrift port are exposed so that you can access ZooKeeper or submit Strom topologies from outside.
+
+All of ZooKeeper, Storm, and Kafka processes are managed by "supervisord".
 
 You can easily scale up Storm Supervisors and Kafka instances easily with fig:
 
@@ -44,8 +46,8 @@ Starting stormdocker_kafka_4...
 $ fig ps
           Name                   Command          State                                                 Ports
 ----------------------------------------------------------------------------------------------------------------------------------------------------------
-stormdocker_zookeeper_1                           Up       3888/tcp, 2888/tcp, 2181/tcp
-stormdocker_nimbus_1       nimbus drpc            Up       8080/tcp, 3773/tcp, 3772/tcp, 6627/tcp, 8000/tcp, 6700/tcp
+stormdocker_zookeeper_1                           Up       3888/tcp, 2888/tcp, 42181->2181/tcp
+stormdocker_nimbus_1       nimbus drpc            Up       8080/tcp, 3773/tcp, 3772/tcp, 46627->6627/tcp, 8000/tcp, 6700/tcp
 stormdocker_ui_1           ui                     Up       48080->8080/tcp, 3773/tcp, 3772/tcp, 6627/tcp, 8000/tcp, 6700/tcp
 stormdocker_supervisor_2   supervisor logviewer   Up       8080/tcp, 3773/tcp, 3772/tcp, 6627/tcp, 49160->8000/tcp, 6700/tcp
 stormdocker_supervisor_1   supervisor logviewer   Up       8080/tcp, 3773/tcp, 3772/tcp, 6627/tcp, 49159->8000/tcp, 6700/tcp
@@ -114,7 +116,22 @@ That should be it! The rest of this document is only for the interested souls.
 
 ## ZooKeeper
 
-Currently only single ZooKeeper instance is supported. Multiple-instance cluster would be nice to add next.
+By default a single ZooKeeper instance cluster is used. You have the choice to use multi-instance ZooKeeper cluster by specifying different fig yml file. There are another two provided already: 3-instance and 5-instance. You can of course create one if you need larger cluster. Change to use a 5-instance ZooKeeper cluster is dead easy:
+
+```
+$ fig -f fig-5zk.yml up -d
+Creating stormdocker_zookeeper4_1...
+Creating stormdocker_zookeeper5_1...
+Creating stormdocker_zookeeper1_1...
+Creating stormdocker_zookeeper2_1...
+Creating stormdocker_zookeeper3_1...
+Creating stormdocker_kafka_1...
+Creating stormdocker_nimbus_1...
+Creating stormdocker_ui_1...
+Creating stormdocker_supervisor_1...
+```
+
+Notice that you have to specify `-f` in all fig commands against the right set, otherwise things might messed up. It is advised to rename the selected one to be `fig.yml` to make the operation easier.
 
 ## Storm
 
