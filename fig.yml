@@ -1,15 +1,17 @@
 zookeeper:
   build: zookeeper
+  ports:
+    - "42181:2181"
   expose:
-    - "2181"
     - "2888"
     - "3888"
   hostname: zookeeper
 nimbus:
   build: storm
   command: nimbus drpc
+  ports:
+    - "46627:6627"
   expose:
-    - "6627"
     - "3772"
     - "3773"
   links:
