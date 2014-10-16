@@ -43,6 +43,15 @@ if [ ! -z "$KAFKA_HEAP_OPTS"]; then
   sed -r -i "s/^(export KAFKA_HEAP_OPTS)=\"(.*)\"/\1=\"$KAFKA_HEAP_OPTS\"/g" $KAFKA_HOME/bin/kafka-server-start.sh
 fi
 
+sed -r -i "s/(log4j.rootLogger)=(.*)/\1=INFO, syslog/g" $KAFKA_HOME/config/log4j.properties
+echo "log4j.appender.syslog=org.apache.log4j.net.SyslogAppender" >> $KAFKA_HOME/config/log4j.properties
+echo "log4j.appender.syslog.Facility=USER" >> $KAFKA_HOME/config/log4j.properties
+echo "log4j.appender.syslog.FacilityPrinting=false" >> $KAFKA_HOME/config/log4j.properties
+echo "log4j.appender.syslog.Header=true" >> $KAFKA_HOME/config/log4j.properties
+echo "log4j.appender.syslog.SyslogHost=$SYSLOG_PORT_514_UDP_ADDR:$SYSLOG_PORT_514_UDP_PORT" >> $KAFKA_HOME/config/log4j.properties
+echo "log4j.appender.syslog.layout=org.apache.log4j.PatternLayout" >> $KAFKA_HOME/config/log4j.properties
+echo "log4j.appender.syslog.layout.ConversionPattern=[ level=%p thread=%t logger=%c | %m ]" >> $KAFKA_HOME/config/log4j.properties
+
 echo [program:kafka] | tee -a /etc/supervisor/conf.d/kafka.conf
 echo command=$KAFKA_HOME/bin/kafka-server-start.sh $KAFKA_HOME/config/server.properties | tee -a /etc/supervisor/conf.d/kafka.conf
 echo autorestart=true | tee -a /etc/supervisor/conf.d/kafka.conf

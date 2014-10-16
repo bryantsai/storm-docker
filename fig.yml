@@ -1,3 +1,8 @@
+syslog:
+  build: rsyslog
+  hostname: syslog
+  expose:
+    - "514/udp"
 zookeeper:
   build: zookeeper
   ports:
@@ -5,6 +10,8 @@ zookeeper:
   expose:
     - "2888"
     - "3888"
+  links:
+    - syslog:syslog
   hostname: zookeeper
 nimbus:
   build: storm
@@ -16,6 +23,7 @@ nimbus:
     - "3773"
   links:
     - zookeeper:zk
+    - syslog:syslog
   hostname: nimbus
 supervisor:
   build: storm
@@ -27,6 +35,7 @@ supervisor:
   links:
     - nimbus:nimbus
     - zookeeper:zk
+    - syslog:syslog
   hostname: supervisor
 ui:
   build: storm
@@ -36,6 +45,7 @@ ui:
   links: 
     - nimbus:nimbus
     - zookeeper:zk
+    - syslog:syslog
   hostname: ui
 cli:
   build: storm
@@ -43,6 +53,7 @@ cli:
   links:
     - nimbus:nimbus
     - zookeeper:zk
+    - syslog:syslog
   hostname: cli
   volumes:
     - .:/code
@@ -51,15 +62,17 @@ kafka:
   build: kafka
   expose:
     - "9092"
-  hostname: kafka
   links:
     - zookeeper:zk
+    - syslog:syslog
+  hostname: kafka
 kafkacli:
   build: kafka
   command: cli
   links:
     - zookeeper:zk
     - kafka:kafka
+    - syslog:syslog
   hostname: kafkacli
   volumes:
     - .:/code
