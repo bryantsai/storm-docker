@@ -1,10 +1,11 @@
 syslog:
-  build: rsyslog
+  image: bryantsai/rsyslog
   hostname: syslog
   expose:
     - "514/udp"
 zookeeper:
-  build: zookeeper
+  image: bryantsai/zookeeper
+  hostname: zookeeper
   ports:
     - "42181:2181"
   expose:
@@ -12,9 +13,9 @@ zookeeper:
     - "3888"
   links:
     - syslog:syslog
-  hostname: zookeeper
 nimbus:
-  build: storm
+  image: bryantsai/storm
+  hostname: nimbus
   command: nimbus drpc
   ports:
     - "46627:6627"
@@ -24,9 +25,9 @@ nimbus:
   links:
     - zookeeper:zk
     - syslog:syslog
-  hostname: nimbus
 supervisor:
-  build: storm
+  image: bryantsai/storm
+  hostname: supervisor
   command: supervisor logviewer
   ports:
     - "8000"
@@ -36,9 +37,9 @@ supervisor:
     - nimbus:nimbus
     - zookeeper:zk
     - syslog:syslog
-  hostname: supervisor
 ui:
-  build: storm
+  image: bryantsai/storm
+  hostname: ui
   command: ui
   ports:
     - "48080:8080"
@@ -46,34 +47,33 @@ ui:
     - nimbus:nimbus
     - zookeeper:zk
     - syslog:syslog
-  hostname: ui
 cli:
-  build: storm
+  image: bryantsai/storm
+  hostname: cli
   command: cli
   links:
     - nimbus:nimbus
     - zookeeper:zk
     - syslog:syslog
-  hostname: cli
   volumes:
     - .:/code
   working_dir: /code
 kafka:
-  build: kafka
+  image: bryantsai/kafka
+  hostname: kafka
   expose:
     - "9092"
   links:
     - zookeeper:zk
     - syslog:syslog
-  hostname: kafka
 kafkacli:
-  build: kafka
+  image: bryantsai/kafka
+  hostname: kafkacli
   command: cli
   links:
-    - zookeeper:zk
     - kafka:kafka
+    - zookeeper:zk
     - syslog:syslog
-  hostname: kafkacli
   volumes:
     - .:/code
   working_dir: /code

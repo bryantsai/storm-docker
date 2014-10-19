@@ -1,35 +1,47 @@
+syslog:
+  image: bryantsai/rsyslog
+  hostname: syslog
+  expose:
+    - "514/udp"
 zookeeper1:
-  build: zookeeper
+  image: bryantsai/zookeeper
+  hostname: zookeeper1
   command: 1 3
   ports:
     - "2181:2181"
     - "2888:2888"
     - "3888:3888"
-  hostname: zookeeper1
+  links:
+    - syslog:syslog
   environment:
     DOCKER_HOST:
 zookeeper2:
-  build: zookeeper
+  image: bryantsai/zookeeper
+  hostname: zookeeper2
   command: 2 3
   ports:
     - "2182:2181"
     - "2889:2889"
     - "3889:3889"
-  hostname: zookeeper2
+  links:
+    - syslog:syslog
   environment:
     DOCKER_HOST:
 zookeeper3:
-  build: zookeeper
+  image: bryantsai/zookeeper
+  hostname: zookeeper3
   command: 3 3
   ports:
     - "2183:2181"
     - "2890:2890"
     - "3890:3890"
-  hostname: zookeeper3
+  links:
+    - syslog:syslog
   environment:
     DOCKER_HOST:
 nimbus:
-  build: storm
+  image: bryantsai/storm
+  hostname: nimbus
   command: nimbus drpc
   ports:
     - "46627:6627"
@@ -40,11 +52,12 @@ nimbus:
     - zookeeper1:zk1
     - zookeeper2:zk2
     - zookeeper3:zk3
-  hostname: nimbus
+    - syslog:syslog
   environment:
     ZK_INSTANCES: 3
 supervisor:
-  build: storm
+  image: bryantsai/storm
+  hostname: supervisor
   command: supervisor logviewer
   ports:
     - "8000"
@@ -55,11 +68,12 @@ supervisor:
     - zookeeper1:zk1
     - zookeeper2:zk2
     - zookeeper3:zk3
-  hostname: supervisor
+    - syslog:syslog
   environment:
     ZK_INSTANCES: 3
 ui:
-  build: storm
+  image: bryantsai/storm
+  hostname: ui
   command: ui
   ports:
     - "48080:8080"
@@ -68,43 +82,46 @@ ui:
     - zookeeper1:zk1
     - zookeeper2:zk2
     - zookeeper3:zk3
-  hostname: ui
+    - syslog:syslog
   environment:
     ZK_INSTANCES: 3
 cli:
-  build: storm
+  image: bryantsai/storm
+  hostname: cli
   command: cli
   links:
     - nimbus:nimbus
     - zookeeper1:zk1
     - zookeeper2:zk2
     - zookeeper3:zk3
-  hostname: cli
+    - syslog:syslog
   volumes:
     - .:/code
   working_dir: /code
   environment:
     ZK_INSTANCES: 3
 kafka:
-  build: kafka
+  image: bryantsai/kafka
+  hostname: kafka
   expose:
     - "9092"
-  hostname: kafka
   links:
     - zookeeper1:zk1
     - zookeeper2:zk2
     - zookeeper3:zk3
+    - syslog:syslog
   environment:
     ZK_INSTANCES: 3
 kafkacli:
-  build: kafka
+  image: bryantsai/kafka
+  hostname: kafkacli
   command: cli
   links:
+    - kafka:kafka
     - zookeeper1:zk1
     - zookeeper2:zk2
     - zookeeper3:zk3
-    - kafka:kafka
-  hostname: kafkacli
+    - syslog:syslog
   volumes:
     - .:/code
   working_dir: /code

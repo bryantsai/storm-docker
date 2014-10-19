@@ -4,7 +4,7 @@ Storm clustering environment on Docker, ZooKeeper and Kafka included. The quicke
 
 This work is based on https://github.com/wurstmeister/storm-docker and https://github.com/wurstmeister/kafka-docker. Kudos to wurstmeister.
 
-**Note the Docker version used to was 1.2.0, Storm version used was 0.9.2, Kafka version used was 0.8.1.1 (SCALA 2.9.2), ZooKeeper version used was 3.4.5.**
+**Note the Docker version used to was 1.3.0, Storm version used was 0.9.2, Kafka version used was 0.8.1.1 (SCALA 2.9.2), ZooKeeper version used was 3.4.5.**
 
 ## TL;DR
 
@@ -14,20 +14,26 @@ Then simply run to launch a Storm cluster, along with a single ZooKeeper instanc
 
 ```
 $ fig up -d
+Creating stormdocker_syslog_1...
 Creating stormdocker_zookeeper_1...
-Creating stormdocker_nimbus_1...
-Creating stormdocker_ui_1...
-Creating stormdocker_supervisor_1...
 Creating stormdocker_kafka_1...
+Creating stormdocker_kafkacli_1...
+Creating stormdocker_nimbus_1...
+Creating stormdocker_cli_1...
+Creating stormdocker_supervisor_1...
+Creating stormdocker_ui_1...
 
 $ fig ps
-          Name                   Command          State                                  Ports
-----------------------------------------------------------------------------------------------------------------------------
-stormdocker_zookeeper_1                           Up      3888/tcp, 2888/tcp, 42181->2181/tcp
-stormdocker_nimbus_1       nimbus drpc            Up      8080/tcp, 3773/tcp, 3772/tcp, 46627->6627/tcp, 8000/tcp, 6700/tcp
-stormdocker_ui_1           ui                     Up      48080->8080/tcp, 3773/tcp, 3772/tcp, 6627/tcp, 8000/tcp, 6700/tcp
-stormdocker_supervisor_1   supervisor logviewer   Up      8080/tcp, 3773/tcp, 3772/tcp, 6627/tcp, 49158->8000/tcp, 6700/tcp
-stormdocker_kafka_1                               Up      9092/tcp
+          Name                        Command               State                                      Ports
+----------------------------------------------------------------------------------------------------------------------------------------------
+stormdocker_cli_1          /usr/bin/start-storm.sh cli      Exit 0
+stormdocker_kafka_1        /usr/bin/start-kafka.sh          Up       9092/tcp
+stormdocker_kafkacli_1     /usr/bin/start-kafka.sh cli      Exit 0
+stormdocker_nimbus_1       /usr/bin/start-storm.sh ni ...   Up       3772/tcp, 3773/tcp, 0.0.0.0:46627->6627/tcp, 6700/tcp, 8000/tcp, 8080/tcp
+stormdocker_supervisor_1   /usr/bin/start-storm.sh su ...   Up       3772/tcp, 3773/tcp, 6627/tcp, 6700/tcp, 0.0.0.0:49167->8000/tcp, 8080/tcp
+stormdocker_syslog_1       rsyslogd -n                      Up       514/tcp, 514/udp
+stormdocker_ui_1           /usr/bin/start-storm.sh ui       Up       3772/tcp, 3773/tcp, 6627/tcp, 6700/tcp, 8000/tcp, 0.0.0.0:48080->8080/tcp
+stormdocker_zookeeper_1    /usr/bin/start-zookeeper.sh      Up       0.0.0.0:42181->2181/tcp, 2888/tcp, 3888/tcp
 ```
 
 This is a complete self-contained environment, with Storm UI port and Supervior logviewer port exposed so that we can access them externally from browsers. Also, ZooKeeper client port and Storm Nimbus Thrift port are exposed so that you can access ZooKeeper or submit Strom topologies from outside.
@@ -44,17 +50,20 @@ Starting stormdocker_kafka_3...
 Starting stormdocker_kafka_4...
 
 $ fig ps
-          Name                   Command          State                                                 Ports
-----------------------------------------------------------------------------------------------------------------------------------------------------------
-stormdocker_zookeeper_1                           Up       3888/tcp, 2888/tcp, 42181->2181/tcp
-stormdocker_nimbus_1       nimbus drpc            Up       8080/tcp, 3773/tcp, 3772/tcp, 46627->6627/tcp, 8000/tcp, 6700/tcp
-stormdocker_ui_1           ui                     Up       48080->8080/tcp, 3773/tcp, 3772/tcp, 6627/tcp, 8000/tcp, 6700/tcp
-stormdocker_supervisor_2   supervisor logviewer   Up       8080/tcp, 3773/tcp, 3772/tcp, 6627/tcp, 49160->8000/tcp, 6700/tcp
-stormdocker_supervisor_1   supervisor logviewer   Up       8080/tcp, 3773/tcp, 3772/tcp, 6627/tcp, 49159->8000/tcp, 6700/tcp
-stormdocker_kafka_4                               Up       9092/tcp
-stormdocker_kafka_3                               Up       9092/tcp
-stormdocker_kafka_2                               Up       9092/tcp
-stormdocker_kafka_1                               Up       9092/tcp
+          Name                        Command               State                                      Ports
+----------------------------------------------------------------------------------------------------------------------------------------------
+stormdocker_cli_1          /usr/bin/start-storm.sh cli      Exit 0
+stormdocker_kafka_1        /usr/bin/start-kafka.sh          Up       9092/tcp
+stormdocker_kafka_2        /usr/bin/start-kafka.sh          Up       9092/tcp
+stormdocker_kafka_3        /usr/bin/start-kafka.sh          Up       9092/tcp
+stormdocker_kafka_4        /usr/bin/start-kafka.sh          Up       9092/tcp
+stormdocker_kafkacli_1     /usr/bin/start-kafka.sh cli      Exit 0
+stormdocker_nimbus_1       /usr/bin/start-storm.sh ni ...   Up       3772/tcp, 3773/tcp, 0.0.0.0:46627->6627/tcp, 6700/tcp, 8000/tcp, 8080/tcp
+stormdocker_supervisor_1   /usr/bin/start-storm.sh su ...   Up       3772/tcp, 3773/tcp, 6627/tcp, 6700/tcp, 0.0.0.0:49167->8000/tcp, 8080/tcp
+stormdocker_supervisor_2   /usr/bin/start-storm.sh su ...   Up       3772/tcp, 3773/tcp, 6627/tcp, 6700/tcp, 0.0.0.0:49168->8000/tcp, 8080/tcp
+stormdocker_syslog_1       rsyslogd -n                      Up       514/tcp, 514/udp
+stormdocker_ui_1           /usr/bin/start-storm.sh ui       Up       3772/tcp, 3773/tcp, 6627/tcp, 6700/tcp, 8000/tcp, 0.0.0.0:48080->8080/tcp
+stormdocker_zookeeper_1    /usr/bin/start-zookeeper.sh      Up       0.0.0.0:42181->2181/tcp, 2888/tcp, 3888/tcp
 ```
 
 Accessing Storm command, say submitting a topology, is also a simple matter:
@@ -74,7 +83,7 @@ drwxr-xr-x 1 root root  204 Oct  2 12:46 storm
 drwxr-xr-x 1 root root  136 Oct  2 12:46 zookeeper
 ```
 
-Note that by default a volume of current directory is mounted on `/code`. If you'd like to change it to map other directory, simply modify `fig.yml` to change the volumes of service "cli".
+Note that by default a volume of current directory is mounted on `/code`. If you'd like to change it to map other directory, simply modify `fig.yml` to change the volumes of service "cli". Also, since Nimbus Thrift port is exposed, you can also submit topologies from the outside.
 
 You can also access Kafka command line in the same manner:
 

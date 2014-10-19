@@ -1,55 +1,71 @@
+syslog:
+  image: bryantsai/rsyslog
+  hostname: syslog
+  expose:
+    - "514/udp"
 zookeeper1:
-  build: zookeeper
+  image: bryantsai/zookeeper
+  hostname: zookeeper1
   command: 1 5
   ports:
     - "2181:2181"
     - "2888:2888"
     - "3888:3888"
-  hostname: zookeeper1
+  links:
+    - syslog:syslog
   environment:
     DOCKER_HOST:
 zookeeper2:
-  build: zookeeper
+  image: bryantsai/zookeeper
+  hostname: zookeeper2
   command: 2 5
   ports:
     - "2182:2181"
     - "2889:2889"
     - "3889:3889"
-  hostname: zookeeper2
+  links:
+    - syslog:syslog
   environment:
     DOCKER_HOST:
 zookeeper3:
-  build: zookeeper
+  image: bryantsai/zookeeper
+  hostname: zookeeper3
   command: 3 5
   ports:
     - "2183:2181"
     - "2890:2890"
     - "3890:3890"
-  hostname: zookeeper3
+  links:
+    - syslog:syslog
   environment:
     DOCKER_HOST:
 zookeeper4:
-  build: zookeeper
+  image: bryantsai/zookeeper
+  hostname: zookeeper4
   command: 4 5
   ports:
     - "2184:2181"
     - "2891:2891"
     - "3891:3891"
-  hostname: zookeeper4
+  links:
+    - syslog:syslog
   environment:
     DOCKER_HOST:
 zookeeper5:
-  build: zookeeper
+  image: bryantsai/zookeeper
+  hostname: zookeeper5
   command: 5 5
   ports:
     - "2185:2181"
     - "2892:2892"
     - "3892:3892"
-  hostname: zookeeper5
+  links:
+    - syslog:syslog
   environment:
     DOCKER_HOST:
 nimbus:
-  build: storm
+  image: bryantsai/storm
+  hostname: nimbus
   command: nimbus drpc
   ports:
     - "46627:6627"
@@ -62,11 +78,12 @@ nimbus:
     - zookeeper3:zk3
     - zookeeper4:zk4
     - zookeeper5:zk5
-  hostname: nimbus
+    - syslog:syslog
   environment:
     ZK_INSTANCES: 5
 supervisor:
-  build: storm
+  image: bryantsai/storm
+  hostname: supervisor
   command: supervisor logviewer
   ports:
     - "8000"
@@ -79,11 +96,12 @@ supervisor:
     - zookeeper3:zk3
     - zookeeper4:zk4
     - zookeeper5:zk5
-  hostname: supervisor
+    - syslog:syslog
   environment:
     ZK_INSTANCES: 5
 ui:
-  build: storm
+  image: bryantsai/storm
+  hostname: ui
   command: ui
   ports:
     - "48080:8080"
@@ -94,11 +112,12 @@ ui:
     - zookeeper3:zk3
     - zookeeper4:zk4
     - zookeeper5:zk5
-  hostname: ui
+    - syslog:syslog
   environment:
     ZK_INSTANCES: 5
 cli:
-  build: storm
+  image: bryantsai/storm
+  hostname: cli
   command: cli
   links:
     - nimbus:nimbus
@@ -107,36 +126,38 @@ cli:
     - zookeeper3:zk3
     - zookeeper4:zk4
     - zookeeper5:zk5
-  hostname: cli
+    - syslog:syslog
   volumes:
     - .:/code
   working_dir: /code
   environment:
     ZK_INSTANCES: 5
 kafka:
-  build: kafka
+  image: bryantsai/kafka
+  hostname: kafka
   expose:
     - "9092"
-  hostname: kafka
   links:
     - zookeeper1:zk1
     - zookeeper2:zk2
     - zookeeper3:zk3
     - zookeeper4:zk4
     - zookeeper5:zk5
+    - syslog:syslog
   environment:
     ZK_INSTANCES: 5
 kafkacli:
-  build: kafka
+  image: bryantsai/kafka
+  hostname: kafkacli
   command: cli
   links:
+    - kafka:kafka
     - zookeeper1:zk1
     - zookeeper2:zk2
     - zookeeper3:zk3
     - zookeeper4:zk4
     - zookeeper5:zk5
-    - kafka:kafka
-  hostname: kafkacli
+    - syslog:syslog
   volumes:
     - .:/code
   working_dir: /code
