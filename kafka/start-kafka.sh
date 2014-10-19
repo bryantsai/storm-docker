@@ -3,8 +3,21 @@
 export PATH=$PATH:$KAFKA_HOME/bin
 
 BROKER_ID=$1
-if [ "$BROKER_ID" == "cli" ] || ! [ -z $BROKER_ID ] && [[ ! $BROKER_ID =~ ^[0-9]+$ ]]; then
+if [ "$BROKER_ID" == "cli" ]; then
   /bin/bash
+  exit 0
+elif [[ ! -z $BROKER_ID ]] && [[ ! $BROKER_ID =~ ^[0-9]+$ ]]; then
+  CMD=$1
+  shift
+  ARGS=''
+  for arg in "$@"; do
+    if [[ $arg =~ ^[$] ]]; then
+      arg=${arg:1}
+      arg=${!arg}
+    fi
+    ARGS=$ARGS' '$arg
+  done
+  "$CMD" $ARGS
   exit 0
 elif [ -z $BROKER_ID ]; then
   ZKNAME=$ZK_NAME
