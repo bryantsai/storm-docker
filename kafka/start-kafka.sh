@@ -29,8 +29,8 @@ elif [ -z $BROKER_ID ]; then
   fi
 fi
 
-HOST_IP=`hostname -i`
-[[ ! -z "$DOCKER_HOST" ]] && HOST_IP=`echo $DOCKER_HOST|awk -F '://' '{print $2}'|awk -F ':' '{print $1}'`
+KAFKA_IP=${KAFKA_IP:-`hostname -i`}
+[[ ! -z "$DOCKER_HOST" ]] && KAFKA_IP=`echo $DOCKER_HOST|awk -F '://' '{print $2}'|awk -F ':' '{print $1}'`
 
 ZKINST=$(($ZK_INSTANCES))
 if [[ ZKINST -gt 0 ]]; then
@@ -48,7 +48,8 @@ fi
 
 sed -r -i "s/(broker.id)=(.*)/\1=$BROKER_ID/g" $KAFKA_HOME/config/server.properties
 sed -r -i "s/^(port)=(.*)/\1=9092/g" $KAFKA_HOME/config/server.properties
-[[ ! -z "$HOST_IP" ]] && sed -r -i "s/#(advertised.host.name)=(.*)/\1=$HOST_IP/g" $KAFKA_HOME/config/server.properties
+[[ ! -z "$KAFKA_IP" ]] && sed -r -i "s/#(advertised.host.name)=(.*)/\1=$KAFKA_IP/g" $KAFKA_HOME/config/server.properties
+[[ ! -z "$KAFKA_PORT" ]] && sed -r -i "s/#(advertised.port)=(.*)/\1=$KAFKA_PORT/g" $KAFKA_HOME/config/server.properties
 sed -r -i "s/^(log.dirs)=(.*)/\1=\/var\/kafka/g" $KAFKA_HOME/config/server.properties
 sed -r -i "s/(zookeeper.connect)=(.*)/\1=$ZKADDR/g" $KAFKA_HOME/config/server.properties
 
